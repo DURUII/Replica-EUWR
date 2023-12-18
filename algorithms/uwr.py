@@ -32,7 +32,7 @@ class UWR(BaseAlgorithm):
 
         # sorted options for each worker based on cost
         # storage, you can use P[i][l] to access p_i^l = (tasks, cost)
-        self.P = {i: sorted(w_i.options, key=lambda o: o.cost) for i, w_i in enumerate(workers)}
+        self.P = {i: w_i.options for i, w_i in enumerate(workers)}
         self.L = len(workers[0].options)
 
         # PROFILE
