@@ -15,15 +15,15 @@ from stakeholder import Worker, Task
 
 
 class BaseAlgorithm(metaclass=ABCMeta):
-    def __init__(self, workers: list[Worker], tasks: list[Task], n_selected: int, n_options: int, budget: float):
+    def __init__(self, workers: list[Worker], tasks: list[Task], n_selected: int, budget: float):
+        # INPUTS
         # \mathcal{N}, the set of workers, indexed by i
-        self.workers, self.N = workers, len(workers)
+        self.workers = workers
+        self.N = len(workers)
 
         # \mathcal{M}, the set of tasks, indexed by j
-        self.tasks, self.M = tasks, len(tasks)
-
-        # L, the number of options each worker submits
-        self.L = n_options
+        self.tasks = tasks
+        self.M = len(tasks)
 
         # K, the number of workers recruited in each round
         self.K = n_selected
@@ -31,14 +31,12 @@ class BaseAlgorithm(metaclass=ABCMeta):
         # the requesters' budget
         self.B = budget
 
-        # return value, total achieved weighted completion quality
+        # OUTPUTS
+        # total achieved weighted completion quality
         self.U = 0.0
 
-        # return value, index for rounds
+        # index for rounds
         self.tau = 1
-
-    def omniscience(self):
-        return np.array([w.quality() for w in self.workers])
 
     @abstractmethod
     def initialize(self) -> None:
