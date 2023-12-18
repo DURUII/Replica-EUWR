@@ -14,7 +14,7 @@ from stakeholder import ExtendedWorker, Task, Option
 
 
 class UWR(BaseAlgorithm):
-    def __init__(self, workers: list[ExtendedWorker], tasks: list[Task], n_selected: int, budget: float, f):
+    def __init__(self, workers: list[ExtendedWorker], tasks: list[Task], n_selected: int, budget: float, f=lambda x: x):
         """
         Initialize the UWR algorithm.
 
