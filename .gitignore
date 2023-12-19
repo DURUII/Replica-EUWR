@@ -229,3 +229,4 @@ fabric.properties
 **/.ignore/*
 **/.vscode/*
 *.mp4
+dataset/taxi_february.txt
