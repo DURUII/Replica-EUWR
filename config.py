@@ -29,20 +29,20 @@ class Config:
 
     f = lambda x: x
 
-    # line_styles = {
-    #     'AUCB': {'color': '#060506', 'marker': 's', 'label': 'AUCB'},
-    #     'optimal': {'color': '#ed1e25', 'marker': 'o', 'label': 'optimal'},
-    #     'separated': {'color': '#3753a4', 'marker': '^', 'label': 'separated'},
-    #     '0.1-first': {'color': '#097f80', 'marker': 'v', 'label': '0.1-first'},
-    #     '0.5-first': {'color': '#ba529e', 'marker': '<', 'label': '0.5-first'},
-    # }
-    #
-    # # bar style
-    # bar_width = 0.15
-    # bar_styles = {
-    #     'AUCB': {'color': '#060506', 'label': 'AUCB', 'hatch': ''},
-    #     'optimal': {'color': '#ed1e25', 'label': 'optimal', 'hatch': '||||'},
-    #     'separated': {'color': '#3753a4', 'label': 'separated', 'hatch': '/////'},
-    #     '0.1-first': {'color': '#097f80', 'label': '0.1-first', 'hatch': '\\\\\\\\\\'},
-    #     '0.5-first': {'color': '#ba529e', 'label': '0.5-first', 'hatch': '---'},
-    # }
+    line_styles = {
+        'UWR': {'color': '#060506', 'marker': 's', 'label': 'Algo.1'},
+        'opt': {'color': '#ed1e25', 'marker': 'o', 'label': 'Optimal'},
+        'random': {'color': '#3753a4', 'marker': '^', 'label': 'Random'},
+        '0.1-first': {'color': '#097f80', 'marker': 'v', 'label': '0.1-first'},
+        '0.5-first': {'color': '#ba529e', 'marker': '<', 'label': '0.5-first'},
+    }
+
+    # bar style
+    bar_width = 0.15
+    bar_styles = {
+        'UWR': {'color': '#060506', 'hatch': '', 'label': 'Algo.1'},
+        'opt': {'color': '#ed1e25', 'hatch': '||||', 'label': 'Optimal'},
+        'random': {'color': '#3753a4', 'hatch': '/////', 'label': 'Random'},
+        '0.1-first': {'color': '#097f80', 'hatch': '\\\\\\\\\\', 'label': '0.1-first'},
+        '0.5-first': {'color': '#ba529e', 'hatch': '---', 'label': '0.5-first'},
+    }

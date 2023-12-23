@@ -5,14 +5,17 @@ Date: 2023/12/23
 Ref:
 1. https://github.com/DURUII/Replica-AUCB/blob/main/emulator.py
 """
-
+from algorithms.euwr import EUWR
+from algorithms.first import EpsilonFirst
+from algorithms.opt import Opt
+from algorithms.rand import Random
 from algorithms.uwr import UWR
 from generator import EasyGenerator, GeoGenerator
 from config import Config as config
 
 
 class Emulator:
-    algorithms = ['UWR']
+    algorithms = ['opt', 'random', '0.1-first', '0.05-first', 'UWR', 'EUWR', ]
 
     def __init__(self, n_tasks: int = config.M,
                  n_workers: int = config.N,
@@ -39,6 +42,14 @@ class Emulator:
         for algo in Emulator.algorithms:
             if algo == 'UWR':
                 self.name2sol[algo] = UWR(self.workers, self.tasks, self.K, self.B, self.f)
+            elif algo == 'EUWR':
+                self.name2sol[algo] = EUWR(self.workers, self.tasks, self.K, self.B, self.f)
+            elif algo.endswith('-first'):
+                self.name2sol[algo] = EpsilonFirst(self.workers, self.tasks, self.K, self.B, self.f, float(algo[:-6]))
+            elif algo == 'random':
+                self.name2sol[algo] = Random(self.workers, self.tasks, self.K, self.B, self.f)
+            elif algo == 'opt':
+                self.name2sol[algo] = Opt(self.workers, self.tasks, self.K, self.B, self.f)
 
     def simulate(self):
         self.build()
@@ -48,5 +59,5 @@ class Emulator:
             solver = self.name2sol[name]
             solver.initialize()
             name2res[name] = solver.run()
-            print(name2res)
+        print(name2res)
         return name2res

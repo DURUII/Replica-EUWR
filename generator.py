@@ -116,8 +116,3 @@ class GeoGenerator(EasyGenerator):
                 break
 
         return self.generate_tasks([]), self.generate_workers(q=list(q), e=[])
-
-
-if __name__ == '__main__':
-    config = Config
-    tt, ww = EasyGenerator(config.M, config.N, config.L, config.f).generate()

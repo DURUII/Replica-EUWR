@@ -2,6 +2,8 @@
 Author: DURUII
 Date: 2023/12/19
 
+Revised: 2023/12/23
+
 Ref:
 1. https://github.com/DURUII/Replica-AUCB/blob/main/algorithms/aucb.py
 2. pseudocode and the corresponding equation definition in the paper
@@ -107,6 +109,9 @@ class UWR(BaseAlgorithm):
         :return: UCB-based quality value of the current selection.
         """
 
+        if not P_t:
+            return 0
+
         # \hat{q}_i(t), compute UCB-based quality value for each worker (Equation 10)
         q_hat = self.q_bar + np.sqrt((self.K + 1) * np.log(np.sum(self.n)) / self.n)
         v = np.zeros(self.M)
@@ -127,11 +132,11 @@ class UWR(BaseAlgorithm):
         """
         # NOTE: for every worker i, at most one option l can be selected in each round t
         P_t = {}
+        heap = []
 
         # Iterate until K workers are selected.
         while len(P_t) < self.K:
-            # advanced data structure
-            heap = []
+
             # P \ P_t' (Line 6 & 7)
             for i in [ii for ii in range(self.N) if ii not in P_t]:
                 for l, option in enumerate(self.workers[i].options):
@@ -143,6 +148,7 @@ class UWR(BaseAlgorithm):
             # Recruit the worker with the maximum ratio of marginal UCB to cost. (Line 7 & 8)
             _, i_star, l_star = heapq.heappop(heap)
             P_t[i_star] = self.workers[i_star].options[l_star]
+            heap = []
 
         return P_t
 
@@ -159,7 +165,7 @@ class UWR(BaseAlgorithm):
             # Terminate if the budget is exceeded.
             if sum(option.cost for option in P_t.values()) >= self.B:
                 break
-                
+
             self.update_profile(P_t)
 
         return self.U, self.tau

@@ -37,7 +37,64 @@ else:
     with open('./runs.pkl', 'rb') as fin:
         df = pickle.load(fin)
 
-print(df)
+# result visualization
+df['Val'] = df['Val'].astype(float)
+df['Reward'] = df['Reward'].astype(float)
+df['Round'] = df['Round'].astype(float)
+fig, axes = plt.subplots(4, 2, figsize=(12.5, 12.5))
 
+# line charts
+for algo in Emulator.algorithms:
+    data = df[(df.X == 'B') & (df.Algorithm == algo)]
+    ax = axes[0, 0]
+    ax.plot(data['Val'], data['Reward'], **config.line_styles[algo])
+    ax.set_xlabel('Budget')
+    ax.set_ylabel('Total rewards')
 
+    ax = axes[0, 1]
+    ax.plot(data['Val'], data['Round'], **config.line_styles[algo])
+    ax.set_xlabel('Budget')
+    ax.set_ylabel('Total rounds')
 
+    data = df[(df.X == 'N') & (df.Algorithm == algo)]
+    # axes[1, 0].plot(data['Val'], data['Reward'], **config.line_styles[algo])
+    ax = axes[1, 1]
+    ax.plot(data['Val'], data['Round'], **config.line_styles[algo])
+    ax.set_xlabel('Number of arms (N)')
+    ax.set_ylabel('Total rounds')
+
+    data = df[(df.X == 'M') & (df.Algorithm == algo)]
+    # axes[2, 0].plot(data['Val'], data['Reward'], **config.line_styles[algo])
+    ax = axes[2, 1]
+    ax.plot(data['Val'], data['Round'], **config.line_styles[algo])
+    ax.set_xlabel('Number of tasks (M)')
+    ax.set_ylabel('Total rounds')
+
+    data = df[(df.X == 'K') & (df.Algorithm == algo)]
+    # axes[3, 0].plot(data['Val'], data['Reward'], **config.line_styles[algo])
+    ax = axes[3, 1]
+    ax.plot(data['Val'], data['Round'], **config.line_styles[algo])
+    ax.set_xlabel('Parameter (K)')
+    ax.set_ylabel('Total rounds')
+
+# bar plots
+n_algos = len(Emulator.algorithms)
+
+for X, ax in zip(['N', 'M', 'K'], [axes[1, 0], axes[2, 0], axes[3, 0]]):
+    data = df[df.X == X].pivot(index='Val', columns='Algorithm', values='Reward')
+    for i, algo in enumerate(Emulator.algorithms):
+        xpos = np.arange(len(data.index)) + (i - n_algos / 2) * config.bar_width
+        ax.bar(xpos, data[algo], width=config.bar_width, **config.bar_styles[algo])
+
+    ax.set_ylabel('Total rewards')
+    ax.set_xticks(range(len(data.index)))
+    ax.set_xticklabels(data.index)
+
+axes[1, 0].set_xlabel('Number of arms (N)')
+axes[2, 0].set_xlabel('Number of tasks (M)')
+axes[3, 0].set_xlabel('Parameter (K)')
+
+for i, ax in enumerate(axes.flat):
+    ax.legend()
+
+plt.savefig('fig.jpg', dpi=800)

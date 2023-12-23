@@ -31,7 +31,6 @@ class EUWR(BaseAlgorithm):
         super().__init__(workers, tasks, n_selected, budget)
 
         self.w = np.array([self.tasks[j].w for j in range(self.M)])
-        self.w = self.w / sum(self.w)
 
         # normalize
         self.L = len(self.workers[0].options)
