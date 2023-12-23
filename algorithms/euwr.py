@@ -10,22 +10,22 @@ Ref:
 import numpy as np
 
 from algorithms.base import BaseAlgorithm
-from stakeholder import ExtendedWorker, Task, Option, SimpleOption, Worker
+from stakeholder import Worker, Task, SimpleOption
 
 
 class EUWR(BaseAlgorithm):
-    def __init__(self, workers: list[ExtendedWorker], tasks: list[Task], ratio_selected: int, budget: float, f):
+    def __init__(self, workers: list[ExtendedWorker], tasks: list[Task], n_selected: int, budget: float, f):
         """
         Initializes the EUWR algorithm.
 
         :param workers: N
         :param tasks: M
-        :param ratio_selected: K = ratio * N
+        :param n_selected: K = ratio * N
         :param budget: B
         :param f: cost = f(|M_i^l|) * eps
         """
 
-        n_selected = int(ratio_selected * len(workers))
+        n_selected = int(n_selected * len(workers))
         super().__init__([], tasks, n_selected, budget)
         self.workers: list[ExtendedWorker] = workers
 

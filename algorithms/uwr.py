@@ -9,20 +9,19 @@ Ref:
 import numpy as np
 
 from algorithms.base import BaseAlgorithm
-from stakeholder import Worker, Task, Option
+from stakeholder import Worker, Task, SimpleOption
 
 
 class UWR(BaseAlgorithm):
-    def __init__(self, workers: list[Worker], tasks: list[Task], ratio_selected: int, budget: float):
+    def __init__(self, workers: list[Worker], tasks: list[Task], n_selected: int, budget: float):
         """
         Initialize the UWR algorithm.
 
         :param workers: N.
         :param tasks: M.
-        :param ratio_selected: K = ratio * N.
+        :param n_selected: K = ratio * N.
         :param budget: B.
         """
-        n_selected = int(ratio_selected * len(workers))
         super().__init__(workers, tasks, n_selected, budget)
 
         # ADDITIONAL INPUT
