@@ -15,7 +15,7 @@ from stakeholder import Worker, Task, SimpleOption
 
 
 class Opt(BaseAlgorithm):
-    def __init__(self, workers: list[Worker], tasks: list[Task], n_selected: int, budget: float, f):
+    def __init__(self, workers: list[Worker], tasks: list[Task], n_selected: int, budget: float, f, extended=False):
         super().__init__(workers, tasks, n_selected, budget)
 
         self.w = np.array([self.tasks[j].w for j in range(self.M)])
@@ -28,6 +28,7 @@ class Opt(BaseAlgorithm):
 
         self.P = {i: w_i.options for i, w_i in enumerate(self.workers)}
         self.f = f
+        self.extended = extended
 
     def compute_utility(self, P_t: dict[int, SimpleOption]):
         u_ww = np.zeros(self.N)
@@ -47,14 +48,18 @@ class Opt(BaseAlgorithm):
         """ sort N arms in descending order of p.p.r """
         self.workers.sort(key=lambda w: w.mu_q / w.mu_e, reverse=True)
 
+
     def run(self):
         """ selects the top K arms according to r/b every round """
         while True:
             self.tau += 1
-            P_t = {
-                i: random.choice(self.workers[i].options)
-                for i in range(self.K)
-            }
+            if self.extended:
+                observed_e = np.array([self.workers[i].epsilon() for i in range(self.N)])
+                for i in range(self.N):
+                    for l in range(self.L):
+                        self.workers[i].options[l].update_cost(self.f, observed_e[i])
+            P_t = {i: random.choice(self.workers[i].options)
+                   for i in range(self.K)}
             if sum(option.cost for option in P_t.values()) >= self.B:
                 break
             self.update_profile(P_t)
