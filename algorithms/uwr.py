@@ -13,16 +13,16 @@ from stakeholder import Worker, Task, Option
 
 
 class UWR(BaseAlgorithm):
-    def __init__(self, workers: list[Worker], tasks: list[Task], n_selected: int, budget: float):
+    def __init__(self, workers: list[Worker], tasks: list[Task], ratio_selected: int, budget: float):
         """
         Initialize the UWR algorithm.
 
-        :param workers: List of Worker objects.
-        :param tasks: List of Task objects.
-        :param n_selected: Number of workers to be selected in each round.
-        :param budget: Total budget available for task allocations.
+        :param workers: N.
+        :param tasks: M.
+        :param ratio_selected: K = ratio * N.
+        :param budget: B.
         """
-
+        n_selected = int(ratio_selected * len(workers))
         super().__init__(workers, tasks, n_selected, budget)
 
         # ADDITIONAL INPUT

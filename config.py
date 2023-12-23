@@ -18,11 +18,16 @@ class Config:
     M = 300
     M_range = np.arange(1, 7) * 100
 
-    K = 1 / 3
-    K_range = [3 / 5, 1 / 2, 1 / 3, 1 / 4, 1 / 5, 1 / 6]
+    rK = 1 / 3
+    rK_range = [3 / 5, 1 / 2, 1 / 3, 1 / 4, 1 / 5, 1 / 6]
 
     B = 1e4
     B_range = np.array([i for i in range(2, 11)]) * 1e3
+
+    # NOTE: default value is not specified in the paper
+    L = 5
+
+    f = lambda x: x
 
     # line_styles = {
     #     'AUCB': {'color': '#060506', 'marker': 's', 'label': 'AUCB'},
