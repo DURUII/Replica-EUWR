@@ -13,7 +13,7 @@ from stakeholder import Worker, Task, SimpleOption
 
 
 class UWR(BaseAlgorithm):
-    def __init__(self, workers: list[Worker], tasks: list[Task], n_selected: int, budget: float):
+    def __init__(self, workers: list[Worker], tasks: list[Task], n_selected: int, budget: float, f):
         """
         Initialize the UWR algorithm.
 
@@ -29,10 +29,15 @@ class UWR(BaseAlgorithm):
         self.w = np.array([self.tasks[j].w for j in range(self.M)])
         self.w = self.w / sum(self.w)
 
-        # sorted options for each worker based on cost
-        # storage, you can use P[i][l] to access p_i^l = (tasks, cost)
-        self.P = {i: w_i.options for i, w_i in enumerate(workers)}
-        self.L = len(workers[0].options)
+        # normalize
+        self.L = len(self.workers[0].options)
+        for w_i in self.workers:
+            for l in range(self.L):
+                w_i.options[l].normalize_cost()
+
+        # you can use P[i][l] to access p_i^l = (tasks, cost)
+        self.P = {i: w_i.options for i, w_i in enumerate(self.workers)}
+        self.f = f
 
         # PROFILE
         # n_i(t) -> count for how many times each arm/worker {i} has been learned
@@ -41,7 +46,7 @@ class UWR(BaseAlgorithm):
         # \bar{q}_i -> the average empirical quality value (reward) of arm/worker {i}
         self.q_bar = np.zeros(self.N)
 
-    def compute_utility(self, P_t: dict[int, Option]):
+    def compute_utility(self, P_t: dict[int, SimpleOption]):
         """
         Compute utility gain in the current round for both worker and task.
 
@@ -62,7 +67,7 @@ class UWR(BaseAlgorithm):
 
         return u_tt, u_ww
 
-    def update_profile(self, P_t: dict[int, Option]):
+    def update_profile(self, P_t: dict[int, SimpleOption]):
         """
         Update the profile of utility, budget, quality, and count of choices after each round.
 
@@ -90,10 +95,10 @@ class UWR(BaseAlgorithm):
         """
 
         # Select the first option for each worker and update the profile accordingly.
-        P_t: dict[int, Option] = {i: w_i.options[0] for i, w_i in enumerate(self.workers)}
+        P_t: dict[int, SimpleOption] = {i: w_i.options[0] for i, w_i in enumerate(self.workers)}
         self.update_profile(P_t)
 
-    def compute_ucb_quality(self, P_t: dict[int, Option]):
+    def compute_ucb_quality(self, P_t: dict[int, SimpleOption]):
         """
         Compute the UCB-based quality for a selection.
 
@@ -113,7 +118,7 @@ class UWR(BaseAlgorithm):
         # represented in vector form (Equation 11)
         return np.dot(self.w, v)
 
-    def select_winners(self) -> dict[int, Option]:
+    def select_winners(self) -> dict[int, SimpleOption]:
         """
         Select a subset of workers with one option each, maximizing the UCB/cost ratio.
 

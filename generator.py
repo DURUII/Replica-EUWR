@@ -43,9 +43,14 @@ class EasyGenerator:
 
         workers = [
             Worker(e[i], q[i],
-                   [SimpleOption(random.sample(range(self.M), k=random.randint(5, 15))) for l in range(self.L)])
+                   [SimpleOption(random.sample(range(self.M), k=random.randint(5, 15))).update_cost(self.f, e[i])
+                    for l in range(self.L)])
             for i in range(self.N)
         ]
+
+        # suppose options are ordered by cost
+        for i in range(self.N):
+            workers[i].options.sort(key=lambda o: o.cost)
 
         return workers
 
@@ -62,14 +67,14 @@ class GeoGenerator(EasyGenerator):
         assert os.path.exists('./dataset/workers.csv')
         assert os.path.exists('./dataset/taxi_february.pkl') or os.path.exists('./dataset/taxi_february.txt')
 
-        # select M locations
-        tasks = gpd.read_file('./dataset/tasks.geojson')
-        tasks = tasks.sample(n=self.M)
-        tasks['buffer'] = tasks.geometry.buffer(200)
-        tasks_active = tasks.set_geometry('buffer')
-        tasks_active.drop(['DRIVER_ID', 'TIMESTAMP'], axis=1, inplace=True)
-
         while True:
+            # select M locations
+            tasks = gpd.read_file('./dataset/tasks.geojson')
+            tasks = tasks.sample(n=self.M)
+            tasks['buffer'] = tasks.geometry.buffer(200)
+            tasks_active = tasks.set_geometry('buffer')
+            tasks_active.drop(['DRIVER_ID', 'TIMESTAMP'], axis=1, inplace=True)
+
             # preparation for counting the frequency
             if not os.path.exists('./dataset/taxi_february-random.geojson'):
                 if not os.path.exists('./dataset/taxi_february.pkl'):
@@ -106,6 +111,7 @@ class GeoGenerator(EasyGenerator):
             driver = driver_counts_within.sample(n=self.N)
             q = driver['WITHIN'].values * 1.0
             q /= max(q)
+            print(len(q), q)
             if len(q) == self.N:
                 break
 

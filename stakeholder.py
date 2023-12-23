@@ -7,12 +7,16 @@ Ref:
 1. https://github.com/DURUII/Replica-AUCB/blob/main/arms.py
 2. "II. SYSTEM MODEL & PROBLEM" of the paper
 """
+import math
 import random
 
 
 class SimpleOption:
+    c_min, c_max = math.inf, 0
+
     def __init__(self, tasks: list[int]):
         self.tasks = tasks
+        self.cost = 0.0
 
     def __str__(self):
         return f"SimpleOption(tasks={self.tasks})"
@@ -20,8 +24,14 @@ class SimpleOption:
     def __repr__(self):
         return self.__str__()
 
-    def compute_cost(self, f, eps):
-        return eps * f(len(self.tasks))
+    def update_cost(self, f, observed_eps):
+        self.cost = observed_eps * f(len(self.tasks))
+        SimpleOption.c_max = max(self.cost, SimpleOption.c_max)
+        SimpleOption.c_min = min(self.cost, SimpleOption.c_min)
+        return self
+
+    def normalize_cost(self):
+        self.cost = self.cost / SimpleOption.c_max
 
 
 class Task:

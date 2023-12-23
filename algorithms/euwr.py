@@ -14,7 +14,7 @@ from stakeholder import Worker, Task, SimpleOption
 
 
 class EUWR(BaseAlgorithm):
-    def __init__(self, workers: list[ExtendedWorker], tasks: list[Task], n_selected: int, budget: float, f):
+    def __init__(self, workers: list[Worker], tasks: list[Task], n_selected: int, budget: float, f):
         """
         Initializes the EUWR algorithm.
 
@@ -26,23 +26,29 @@ class EUWR(BaseAlgorithm):
         """
 
         n_selected = int(n_selected * len(workers))
-        super().__init__([], tasks, n_selected, budget)
-        self.workers: list[ExtendedWorker] = workers
+        super().__init__(workers, tasks, n_selected, budget)
 
         self.w = np.array([self.tasks[j].w for j in range(self.M)])
         self.w = self.w / sum(self.w)
 
-        self.P = {i: w_i.options for i, w_i in enumerate(workers)}
-        self.L = len(workers[0].options)
+        # normalize
+        self.L = len(self.workers[0].options)
+        for w_i in self.workers:
+            for l in range(self.L):
+                w_i.options[l].normalize_cost()
+
+        self.P = {i: w_i.options for i, w_i in enumerate(self.workers)}
+        self.f = f
 
         self.n = np.zeros(self.N)
         self.q_bar = np.zeros(self.N)
 
         # Update for extended problem:
-        self.f = f
         self.m = np.zeros(self.N)
-        self.eps = None
         self.eps_bar = np.zeros(self.N)
+
+        # Extra Modification
+        self.observed_e = []
 
     def compute_utility(self, P_t: dict[int, SimpleOption]):
         """
@@ -68,17 +74,17 @@ class EUWR(BaseAlgorithm):
         """
 
         # Update
-        self.eps = np.array([self.workers[i].epsilon() if i in P_t else 0 for i in range(self.N)])
         u_tt, u_ww = self.compute_utility(P_t)
         self.U += np.dot(self.w, u_tt)
+
         cardinality = np.array([len(P_t[i].tasks) if i in P_t else 0 for i in range(self.N)])
         mask = np.isin(range(self.N), list(P_t.keys()))
         self.q_bar = np.where(mask, (self.q_bar * self.n + u_ww) / (self.n + cardinality), self.q_bar)
         self.n += cardinality
 
         # Update for extended problem:
-        self.B -= np.sum(self.eps * self.f(cardinality))
-        self.eps_bar = np.where(mask, (self.eps_bar * self.m + self.eps) / (self.eps_bar + 1), self.eps_bar)
+        self.B -= np.sum([option.cost for option in P_t.values()])
+        self.eps_bar = np.where(mask, (self.eps_bar * self.m + self.observed_e) / (self.eps_bar + 1), self.eps_bar)
         self.m += mask
 
     def initialize(self):
@@ -86,7 +92,9 @@ class EUWR(BaseAlgorithm):
         Initial recruitment of all workers at the very beginning of the algorithm.
         """
 
-        P_t: dict[int, Option] = {i: w_i.options[0] for i, w_i in enumerate(self.workers)}
+        self.observed_e = np.array([self.workers[i].epsilon() for i in range(self.N)])
+        P_t: dict[int, SimpleOption] = {i: w_i.options[0].update_cost(self.f, self.observed_e[i])
+                                        for i, w_i in enumerate(self.workers)}
         self.update_profile(P_t)
 
     def compute_ucb_quality(self, P_t: dict[int, SimpleOption]):
@@ -123,7 +131,7 @@ class EUWR(BaseAlgorithm):
                 for l, option in enumerate(self.workers[i].options):
                     # Select workers based on a new UCB-based criterion that considers the cost
                     ucb_diff = self.compute_ucb_quality(P_t | {i: option}) - self.compute_ucb_quality(P_t)
-                    criterion = ucb_diff / option.compute_cost(self.f, self.eps)
+                    criterion = ucb_diff / option.cost
                     items.append((i, l, criterion))
             if items:
                 i_star, l_star, _ = max(items, key=lambda x: x[2])
@@ -138,10 +146,16 @@ class EUWR(BaseAlgorithm):
         """
         while True:
             self.tau += 1
-            # The algorithm now adjusts for the dynamic cost estimation
+            # NOTE: The algorithm now adjusts for the dynamic cost estimation
+            self.observed_e = np.array([self.workers[i].epsilon() for i in range(self.N)])
+            for i in range(self.N):
+                for l in range(self.L):
+                    self.workers[i].options[l].update_cost(self.f, self.observed_e[i])
+
             P_t = self.select_winners()
             print(self.tau, self.B)
-            if sum(option.compute_cost(self.f, self.eps) for option in P_t.values()) >= self.B:
+            if sum(option.cost for option in P_t.values()) >= self.B:
                 break
             self.update_profile(P_t)
+
         return self.U, self.tau

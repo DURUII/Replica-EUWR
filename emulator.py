@@ -28,12 +28,10 @@ class Emulator:
         self.f = f
 
         if easy_generator:
-            Generator = EasyGenerator
             generator = EasyGenerator(n_tasks=self.M, n_workers=self.N, n_options=self.L, f=lambda x: x)
         else:
             generator = GeoGenerator(n_tasks=self.M, n_workers=self.N, n_options=self.L, f=lambda x: x)
         self.tasks, self.workers = generator.generate()
-
         self.name2sol = {}
 
     def build(self):
@@ -49,4 +47,5 @@ class Emulator:
             solver = self.name2sol[name]
             solver.initialize()
             name2res[name] = solver.run()
+            print(name2res)
         return name2res
