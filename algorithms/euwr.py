@@ -2,6 +2,8 @@
 Author: DURUII
 Date: 2023/12/19
 
+Revised: 2023/12/23
+
 Ref:
 1. https://github.com/DURUII/Replica-AUCB/blob/main/algorithms/aucb.py
 2. pseudocode and the corresponding equation definition in the paper
@@ -26,7 +28,6 @@ class EUWR(BaseAlgorithm):
         :param f: cost = f(|M_i^l|) * eps
         """
 
-        n_selected = int(n_selected * len(workers))
         super().__init__(workers, tasks, n_selected, budget)
 
         self.w = np.array([self.tasks[j].w for j in range(self.M)])
@@ -106,14 +107,18 @@ class EUWR(BaseAlgorithm):
         :return: UCB-based quality value of the current selection.
         """
 
+        # do not forget the base case
+        if not P_t:
+            return 0
+
         # Update for extended problem:
         Q_t = np.sqrt((self.K + 1) * np.log(np.sum(self.n)) / self.n)  # [N]
         C_t = np.sqrt((self.K + 1) * np.log(self.tau) / self.m)  # [N]
-        f = np.array([len(option.tasks) / self.f(len(option.tasks)) for i, option in P_t.items()])  # [N]
+
+        f = np.array([len(P_t[i].tasks) / self.f(len(P_t[i].tasks)) if i in P_t else 0 for i in range(self.N)])  # [N]
 
         r_hat = f * self.q_bar / self.eps_bar  # [N]
         r_hat += np.max(f) * (Worker.eps_min * Q_t + C_t) / Worker.eps_min ** 2
-
         v = np.zeros(self.M)  # [M]
         for i, option in P_t.items():
             v[option.tasks] = np.maximum(r_hat[i], v[option.tasks])
@@ -126,8 +131,8 @@ class EUWR(BaseAlgorithm):
         :return: Dictionary mapping selected worker index to their chosen option.
         """
         P_t = {}
+        heap = []
         while len(P_t) < self.K:
-            heap = []
             for i in [ii for ii in range(self.N) if ii not in P_t]:
                 for l, option in enumerate(self.workers[i].options):
                     # Select workers based on a new UCB-based criterion that considers the cost
@@ -137,6 +142,7 @@ class EUWR(BaseAlgorithm):
 
             _, i_star, l_star = heapq.heappop(heap)
             P_t[i_star] = self.workers[i_star].options[l_star]
+            heap = []
 
         return P_t
 
@@ -155,7 +161,6 @@ class EUWR(BaseAlgorithm):
                     self.workers[i].options[l].update_cost(self.f, self.observed_e[i])
 
             P_t = self.select_winners()
-            print(self.tau, self.B)
             if sum(option.cost for option in P_t.values()) >= self.B:
                 break
             self.update_profile(P_t)
