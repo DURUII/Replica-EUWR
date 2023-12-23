@@ -5,6 +5,7 @@ Date: 2023/12/23
 Ref:
 1. https://github.com/DURUII/Replica-AUCB/blob/main/algorithms/opt.py
 """
+import heapq
 
 import numpy as np
 
@@ -20,15 +21,12 @@ class Opt(BaseAlgorithm):
 
         self.w = np.array([self.tasks[j].w for j in range(self.M)])
 
-        # normalize
         self.L = len(self.workers[0].options)
-        for w_i in self.workers:
-            for l in range(self.L):
-                w_i.options[l].normalize_cost()
 
         self.P = {i: w_i.options for i, w_i in enumerate(self.workers)}
         self.f = f
         self.extended = extended
+        self.P_t = {}
 
     def compute_utility(self, P_t: dict[int, SimpleOption]):
         u_ww = np.zeros(self.N)
@@ -39,18 +37,42 @@ class Opt(BaseAlgorithm):
             u_ww = np.sum(q_i)
         return u_tt, u_ww
 
+    def compute_utility_e(self, P_t: dict[int, SimpleOption]):
+        u_ww = np.zeros(self.N)
+        u_tt = np.zeros(self.M)
+        for i, option in P_t.items():
+            q_i = np.array([self.workers[i].mu_q for _ in range(len(option.tasks))])
+            u_tt[option.tasks] = np.maximum(u_tt[option.tasks], q_i)
+            u_ww = np.sum(q_i)
+        return u_tt, u_ww
+
     def update_profile(self, P_t: dict[int, SimpleOption]):
         u_tt, u_ww = self.compute_utility(P_t)
         self.U += np.dot(self.w, u_tt)
         self.B -= np.sum([option.cost for option in P_t.values()])
 
     def initialize(self):
-        """ sort N arms in descending order of p.p.r """
-        self.workers.sort(key=lambda w: w.mu_q / w.mu_e, reverse=True)
+        """ steepest ascent """
+        P_t = {}
+        heap = []
+        while len(P_t) < self.K:
+            for i in [ii for ii in range(self.N) if ii not in P_t]:
+                for l, option in enumerate(self.workers[i].options):
+                    u_diff = np.dot(self.w,
+                                    self.compute_utility_e(P_t | {i: option})[0]) - np.dot(self.w,
+                                                                                           self.compute_utility_e(
+                                                                                               P_t)[0])
+                    criterion = - u_diff / option.cost
+                    heapq.heappush(heap, (criterion, i, l))
 
+            _, i_star, l_star = heapq.heappop(heap)
+            P_t[i_star] = self.workers[i_star].options[l_star]
+            heap = []
+        self.P_t = P_t
 
     def run(self):
         """ selects the top K arms according to r/b every round """
+        P_t = self.P_t
         while True:
             self.tau += 1
             if self.extended:
@@ -58,8 +80,7 @@ class Opt(BaseAlgorithm):
                 for i in range(self.N):
                     for l in range(self.L):
                         self.workers[i].options[l].update_cost(self.f, observed_e[i])
-            P_t = {i: random.choice(self.workers[i].options)
-                   for i in range(self.K)}
+
             if sum(option.cost for option in P_t.values()) >= self.B:
                 break
             self.update_profile(P_t)

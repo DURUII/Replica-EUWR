@@ -32,11 +32,7 @@ class UWR(BaseAlgorithm):
         self.w = np.array([self.tasks[j].w for j in range(self.M)])
         self.w = self.w / sum(self.w)
 
-        # normalize
         self.L = len(self.workers[0].options)
-        for w_i in self.workers:
-            for l in range(self.L):
-                w_i.options[l].normalize_cost()
 
         # you can use P[i][l] to access p_i^l = (tasks, cost)
         self.P = {i: w_i.options for i, w_i in enumerate(self.workers)}
@@ -136,7 +132,6 @@ class UWR(BaseAlgorithm):
 
         # Iterate until K workers are selected.
         while len(P_t) < self.K:
-
             # P \ P_t' (Line 6 & 7)
             for i in [ii for ii in range(self.N) if ii not in P_t]:
                 for l, option in enumerate(self.workers[i].options):
