@@ -16,8 +16,8 @@ from config import Config as config
 
 class Emulator:
     algorithms = ['opt', 'random', '0.1-first', '0.05-first', 'UWR', 'EUWR',
-                  # 'extended-opt', 'extended-random', 'extended-0.1-first', 'extended-0.05-first', 'extended-UWR',
-                  # 'extended-EUWR'
+                  'extended-opt', 'extended-random', 'extended-0.1-first', 'extended-0.05-first', 'extended-UWR',
+                  'extended-EUWR'
                   ]
 
     def __init__(self, n_tasks: int = config.M,
@@ -26,13 +26,14 @@ class Emulator:
                  n_options: int = config.L,
                  budget: float = config.B,
                  f=config.f,
-                 easy_generator=True):
+                 easy_generator=True, extended=False):
         self.N = n_workers
         self.M = n_tasks
         self.B = budget
         self.K = int(r_selected * self.N)
         self.L = n_options
         self.f = f
+        self.extended = extended
 
         if easy_generator:
             generator = EasyGenerator(n_tasks=self.M, n_workers=self.N, n_options=self.L, f=lambda x: x)
@@ -43,27 +44,29 @@ class Emulator:
 
     def build(self):
         for algo in Emulator.algorithms:
-            if not algo.startswith('extended'):
-                if algo == 'UWR':
-                    self.name2sol[algo] = UWR(self.workers, self.tasks, self.K, self.B, self.f)
-                elif algo.endswith('-first'):
-                    self.name2sol[algo] = EpsilonFirst(self.workers, self.tasks, self.K, self.B, self.f,
-                                                       float(algo[:-6]))
-                elif algo == 'random':
-                    self.name2sol[algo] = Random(self.workers, self.tasks, self.K, self.B, self.f)
-                elif algo == 'opt':
-                    self.name2sol[algo] = Opt(self.workers, self.tasks, self.K, self.B, self.f)
+            if not self.extended:
+                if not algo.startswith('extended'):
+                    if algo == 'UWR':
+                        self.name2sol[algo] = UWR(self.workers, self.tasks, self.K, self.B, self.f)
+                    elif algo.endswith('-first'):
+                        self.name2sol[algo] = EpsilonFirst(self.workers, self.tasks, self.K, self.B, self.f,
+                                                           float(algo[:-6]))
+                    elif algo == 'random':
+                        self.name2sol[algo] = Random(self.workers, self.tasks, self.K, self.B, self.f)
+                    elif algo == 'opt':
+                        self.name2sol[algo] = Opt(self.workers, self.tasks, self.K, self.B, self.f)
             else:
-                algo = algo[8:][:]
-                if algo == 'EUWR':
-                    self.name2sol[algo] = EUWR(self.workers, self.tasks, self.K, self.B, self.f)
-                elif algo.endswith('-first'):
-                    self.name2sol[algo] = EpsilonFirst(self.workers, self.tasks, self.K, self.B, self.f,
-                                                       float(algo[:-6]), extended=True)
-                elif algo == 'random':
-                    self.name2sol[algo] = Random(self.workers, self.tasks, self.K, self.B, self.f, extended=True)
-                elif algo == 'opt':
-                    self.name2sol[algo] = Opt(self.workers, self.tasks, self.K, self.B, self.f, extended=True)
+                if not algo.startswith('extended'):
+                    algo = algo[8:][:]
+                    if algo == 'EUWR':
+                        self.name2sol[algo] = EUWR(self.workers, self.tasks, self.K, self.B, self.f)
+                    elif algo.endswith('-first'):
+                        self.name2sol[algo] = EpsilonFirst(self.workers, self.tasks, self.K, self.B, self.f,
+                                                           float(algo[:-6]), extended=True)
+                    elif algo == 'random':
+                        self.name2sol[algo] = Random(self.workers, self.tasks, self.K, self.B, self.f, extended=True)
+                    elif algo == 'opt':
+                        self.name2sol[algo] = Opt(self.workers, self.tasks, self.K, self.B, self.f, extended=True)
 
     def simulate(self):
         self.build()
