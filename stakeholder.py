@@ -6,23 +6,15 @@ Ref:
 1. https://github.com/DURUII/Replica-AUCB/blob/main/arms.py
 2. "II. SYSTEM MODEL & PROBLEM" of the paper
 """
+import random
 
 
 class SimpleOption:
     def __init__(self, tasks: list[int]):
-        # indexes of the chosen tasks
         self.tasks = tasks
 
     def compute_cost(self, f, eps):
         return eps * f(len(self.tasks))
-
-
-class Option(SimpleOption):
-    def __init__(self, tasks: list[int], cost: float):
-        super().__init__(tasks)
-
-        # the total cost given such a set of tasks
-        self.cost = cost
 
 
 class Task:
@@ -33,21 +25,22 @@ class Task:
 class Worker:
     eps_min = 0.1
 
-    def __init__(self, cost_parameter: float, expectation: float, options: list[Option], D):
-        self.eps = cost_parameter
-        self.q = expectation
+    def __init__(self, e: float, q: float, options: list[SimpleOption]):
+        # eps (cost parameter) -> prior, fixed value
+        self.mu_e = e
+        self.mu_q = q
+        self.sigma_q = random.uniform(0, min(q / 3, (1 - q) / 3))
         self.options = options
-        self.D = D
 
     def draw(self):
-        return self.D()
+        return random.gauss(self.mu_q, self.sigma_q)
 
 
 class ExtendedWorker(Worker):
-    def __init__(self, cost_parameter: float, expectation: float, options: list[SimpleOption], D, E):
-        super().__init__(cost_parameter, expectation, [], D)
-        self.options: list[SimpleOption] = options
-        self.E = E
+    def __init__(self, e: float, q: float, options: list[SimpleOption]):
+        super().__init__(e, q, options)
+        self.sigma_e = random.uniform(0, min(e / 3, (1 - e) / 3))
 
     def epsilon(self):
-        return self.E()
+        # eps (cost parameter) -> sampled from a distribution
+        return random.gauss(self.mu_e, self.sigma_e)
