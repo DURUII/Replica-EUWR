@@ -10,22 +10,24 @@ Ref:
 import numpy as np
 
 from algorithms.base import BaseAlgorithm
-from stakeholder import ExtendedWorker, Task, Option
+from stakeholder import ExtendedWorker, Task, Option, SimpleOption, Worker
 
 
 class EUWR(BaseAlgorithm):
-    def __init__(self, workers: list[ExtendedWorker], tasks: list[Task], n_selected: int, budget: float, f=lambda x: x):
+    def __init__(self, workers: list[ExtendedWorker], tasks: list[Task], ratio_selected: int, budget: float, f):
         """
         Initializes the EUWR algorithm.
 
-        :param workers: List of ExtendedWorker objects representing the workforce.
-        :param tasks: List of Task objects representing tasks to be completed.
-        :param n_selected: Integer representing the number of workers to select each round.
-        :param budget: Float representing the total budget for task allocations.
-        :param f: A monotonically increasing function used to compute the dynamic cost based on the task's length.
+        :param workers: N
+        :param tasks: M
+        :param ratio_selected: K = ratio * N
+        :param budget: B
+        :param f: cost = f(|M_i^l|) * eps
         """
 
-        super().__init__(workers, tasks, n_selected, budget)
+        n_selected = int(ratio_selected * len(workers))
+        super().__init__([], tasks, n_selected, budget)
+        self.workers: list[ExtendedWorker] = workers
 
         self.w = np.array([self.tasks[j].w for j in range(self.M)])
         self.w = self.w / sum(self.w)
@@ -39,9 +41,10 @@ class EUWR(BaseAlgorithm):
         # Update for extended problem:
         self.f = f
         self.m = np.zeros(self.N)
+        self.eps = None
         self.eps_bar = np.zeros(self.N)
 
-    def compute_utility(self, P_t: dict[int, Option]):
+    def compute_utility(self, P_t: dict[int, SimpleOption]):
         """
         Compute utility gain in the current round for both worker and task.
 
@@ -57,7 +60,7 @@ class EUWR(BaseAlgorithm):
             u_ww = np.sum(q_i)
         return u_tt, u_ww
 
-    def update_profile(self, P_t: dict[int, Option]):
+    def update_profile(self, P_t: dict[int, SimpleOption]):
         """
         Update the profile of utility, budget, quality, and count of choices after each round.
 
@@ -65,8 +68,7 @@ class EUWR(BaseAlgorithm):
         """
 
         # Update
-        eps = np.array([self.workers[i].eps() if i in P_t else 0 for i in range(self.N)])
-
+        self.eps = np.array([self.workers[i].epsilon() if i in P_t else 0 for i in range(self.N)])
         u_tt, u_ww = self.compute_utility(P_t)
         self.U += np.dot(self.w, u_tt)
         cardinality = np.array([len(P_t[i].tasks) if i in P_t else 0 for i in range(self.N)])
@@ -75,8 +77,8 @@ class EUWR(BaseAlgorithm):
         self.n += cardinality
 
         # Update for extended problem:
-        self.B -= np.sum(eps * self.f(cardinality))
-        self.eps_bar = np.where(mask, (self.eps_bar * self.m + eps) / (self.eps_bar + 1), self.eps_bar)
+        self.B -= np.sum(self.eps * self.f(cardinality))
+        self.eps_bar = np.where(mask, (self.eps_bar * self.m + self.eps) / (self.eps_bar + 1), self.eps_bar)
         self.m += mask
 
     def initialize(self):
@@ -87,7 +89,7 @@ class EUWR(BaseAlgorithm):
         P_t: dict[int, Option] = {i: w_i.options[0] for i, w_i in enumerate(self.workers)}
         self.update_profile(P_t)
 
-    def compute_ucb_quality(self, P_t: dict[int, Option]):
+    def compute_ucb_quality(self, P_t: dict[int, SimpleOption]):
         """
         Incorporate both quality and cost UCB in the selection criterion.
 
@@ -101,14 +103,14 @@ class EUWR(BaseAlgorithm):
         f = np.array([len(option.tasks) / self.f(len(option.tasks)) for i, option in P_t.items()])  # [N]
 
         r_hat = f * self.q_bar / self.eps_bar  # [N]
-        r_hat += np.max(f) * (ExtendedWorker.eps_min * Q_t + C_t) / ExtendedWorker.eps_min ** 2
+        r_hat += np.max(f) * (Worker.eps_min * Q_t + C_t) / Worker.eps_min ** 2
 
         v = np.zeros(self.M)  # [M]
         for i, option in P_t.items():
             v[option.tasks] = np.maximum(r_hat[i], v[option.tasks])
         return np.dot(self.w, v)
 
-    def select_winners(self) -> dict[int, Option]:
+    def select_winners(self) -> dict[int, SimpleOption]:
         """
         Select a subset of workers with one option each, maximizing the UCB/cost ratio.
 
@@ -121,7 +123,7 @@ class EUWR(BaseAlgorithm):
                 for l, option in enumerate(self.workers[i].options):
                     # Select workers based on a new UCB-based criterion that considers the cost
                     ucb_diff = self.compute_ucb_quality(P_t | {i: option}) - self.compute_ucb_quality(P_t)
-                    criterion = ucb_diff / option.cost
+                    criterion = ucb_diff / option.compute_cost(self.f, self.eps)
                     items.append((i, l, criterion))
             if items:
                 i_star, l_star, _ = max(items, key=lambda x: x[2])
@@ -138,7 +140,8 @@ class EUWR(BaseAlgorithm):
             self.tau += 1
             # The algorithm now adjusts for the dynamic cost estimation
             P_t = self.select_winners()
-            if sum(option.cost for option in P_t.values()) >= self.B:
+            print(self.tau, self.B)
+            if sum(option.compute_cost(self.f, self.eps) for option in P_t.values()) >= self.B:
                 break
             self.update_profile(P_t)
         return self.U, self.tau
