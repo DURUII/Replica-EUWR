@@ -1,6 +1,6 @@
 """
 Author: DURUII
-Date: 2023/12/23
+Created: 2023/12/23
 
 Ref:
 1. "Evaluation Methodology" in the paper
@@ -11,35 +11,60 @@ import random
 import os
 
 import numpy as np
+from typing import Iterable
 
 from config import Config
 import geopandas as gpd
 import pandas as pd
-from stakeholder import Worker, Task, ExtendedWorker, Option, SimpleOption
+from stakeholder import Worker, Task, SimpleOption
 from dateutil import parser
+from rich import print
 
 
-class Generator:
-
-    def __init__(self, num_tasks: int, num_workers: int, num_options: int, f,
-                 extended=False, gauss_q=True, gauss_eps=True) -> None:
-        self.N = num_workers
-        self.M = num_tasks
-        self.L = num_options
+class EasyGenerator:
+    def __init__(self, n_tasks: int, n_workers: int, n_options: int, f):
+        self.N = n_workers
+        self.M = n_tasks
+        self.L = n_options
         self.f = f
-        self.extended = extended
-        self.gauss_q = gauss_q
-        self.gauss_eps = gauss_eps
+
+    def generate_tasks(self, weights: list[float]) -> list[Task]:
+        if not weights:
+            weights = np.diff(sorted([random.uniform(0, 1) for j in range(self.M + 1)]))
+
+        return [Task(weights[j]) for j in range(self.M)]
+
+    def generate_workers(self, q, e) -> list[Worker]:
+        workers = []
+        if not q:
+            q = [random.uniform(0.1, 1) for i in range(self.N)]
+        if not e:
+            e = [random.uniform(0.1, 1) for i in range(self.N)]
+
+        workers = [
+            Worker(e[i], q[i],
+                   [SimpleOption(random.sample(range(self.M), k=random.randint(5, 15))) for l in range(self.L)])
+            for i in range(self.N)
+        ]
+
+        return workers
+
+    def generate(self) -> (list[Task], list[Worker]):
+        return self.generate_tasks([]), self.generate_workers([], [])
+
+
+class GeoGenerator(EasyGenerator):
+    def __init__(self, n_tasks: int, n_workers: int, n_options: int, f) -> None:
+        super().__init__(n_tasks, n_workers, n_options, f)
 
     def generate(self) -> (list[Task], list[Worker]):
         assert os.path.exists('./dataset/tasks.geojson')
         assert os.path.exists('./dataset/workers.csv')
         assert os.path.exists('./dataset/taxi_february.pkl') or os.path.exists('./dataset/taxi_february.txt')
 
-        # select M locations as tasks
+        # select M locations
         tasks = gpd.read_file('./dataset/tasks.geojson')
         tasks = tasks.sample(n=self.M)
-
         tasks['buffer'] = tasks.geometry.buffer(200)
         tasks_active = tasks.set_geometry('buffer')
         tasks_active.drop(['DRIVER_ID', 'TIMESTAMP'], axis=1, inplace=True)
@@ -74,59 +99,19 @@ class Generator:
                 gdf.to_file('./dataset/taxi_february-random.geojson')
             gdf = gpd.read_file('./dataset/taxi_february-random.geojson')
 
+            # select N drivers
             within_tasks_buffer = gpd.sjoin(gdf, tasks_active, how='inner', predicate='within')
             driver_counts_within = within_tasks_buffer['DRIVER_ID'].value_counts().reset_index()
             driver_counts_within.columns = ['DRIVER_ID', 'WITHIN']
-
-            # select N drivers as workers
             driver = driver_counts_within.sample(n=self.N)
             q = driver['WITHIN'].values * 1.0
             q /= max(q)
-
-            print(len(q), q)
             if len(q) == self.N:
                 break
 
-        # let w_j be uniform
-        weights = [random.uniform(0, 1) for j in range(self.M)]
-        T = [Task(weight=weights[j]) for j in range(self.M)]
-
-        W = []
-        for i in range(self.N):
-            eps = random.uniform(Worker.eps_min, 1)
-            D = lambda: min(random.uniform(0, 2 * q[i]), 1)
-            if self.gauss_q:
-                D = lambda: random.gauss(q[i], random.uniform(0, min(q[i] / 3, (1 - q[i] / 3))))
-
-            if self.extended:
-                options = []
-                for l in range(self.L):
-                    options.append(SimpleOption(random.sample(list(range(self.M)), k=random.randint(5, 15))))
-
-                E = lambda: min(random.uniform(0, 2 * eps), 1)
-                if self.gauss_eps:
-                    E = lambda: random.gauss(eps, random.uniform(0, min(eps / 3, (1 - eps / 3))))
-
-                w_i = ExtendedWorker(cost_parameter=eps,
-                                     expectation=q[i],
-                                     options=options,
-                                     D=D, E=E)
-            else:
-                options = []
-                for l in range(self.L):
-                    t = random.sample(list(range(self.M)), k=random.randint(5, 15))
-                    c = self.f(len(t)) * eps
-                    options.append(Option(t, c))
-
-                w_i = Worker(cost_parameter=random.uniform(0, 1),
-                             expectation=q,
-                             options=sorted(options, key=lambda o: o.cost),
-                             D=D)
-
-            W.append(w_i)
-        return T, W
+        return self.generate_tasks([]), self.generate_workers(q=list(q), e=[])
 
 
 if __name__ == '__main__':
     config = Config
-    tt, ww = Generator(config.M, config.N, config.L, config.f).generate()
+    tt, ww = EasyGenerator(config.M, config.N, config.L, config.f).generate()
