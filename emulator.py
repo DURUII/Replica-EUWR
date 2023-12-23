@@ -8,17 +8,18 @@ Ref:
 
 from algorithms.uwr import UWR
 from generator import EasyGenerator, GeoGenerator
+from config import Config as config
 
 
 class Emulator:
     algorithms = ['UWR']
 
-    def __init__(self, n_tasks: int = 300,
-                 n_workers: int = 50,
-                 r_selected: float = 1 / 3,
-                 n_options: int = 5,
-                 budget: float = 1e4,
-                 f=lambda x: x,
+    def __init__(self, n_tasks: int = config.M,
+                 n_workers: int = config.N,
+                 r_selected: float = config.rK,
+                 n_options: int = config.L,
+                 budget: float = config.B,
+                 f=config.f,
                  easy_generator=True):
         self.N = n_workers
         self.M = n_tasks
@@ -37,7 +38,7 @@ class Emulator:
     def build(self):
         for algo in Emulator.algorithms:
             if algo == 'UWR':
-                self.name2sol[algo] = UWR(self.workers, self.tasks, self.K, self.B)
+                self.name2sol[algo] = UWR(self.workers, self.tasks, self.K, self.B, self.f)
 
     def simulate(self):
         self.build()

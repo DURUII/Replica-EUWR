@@ -10,6 +10,7 @@ import numpy as np
 
 from algorithms.base import BaseAlgorithm
 from stakeholder import Worker, Task, SimpleOption
+import heapq
 
 
 class UWR(BaseAlgorithm):
@@ -129,20 +130,19 @@ class UWR(BaseAlgorithm):
 
         # Iterate until K workers are selected.
         while len(P_t) < self.K:
-            items = []
-
+            # advanced data structure
+            heap = []
             # P \ P_t' (Line 6 & 7)
             for i in [ii for ii in range(self.N) if ii not in P_t]:
                 for l, option in enumerate(self.workers[i].options):
                     # Compute UCB quality difference (Equation 12)
                     ucb_diff = self.compute_ucb_quality(P_t | {i: option}) - self.compute_ucb_quality(P_t)
-                    criterion = ucb_diff / option.cost
-                    items.append((i, l, criterion))
+                    criterion = - ucb_diff / option.cost
+                    heapq.heappush(heap, (criterion, i, l))
 
             # Recruit the worker with the maximum ratio of marginal UCB to cost. (Line 7 & 8)
-            if items:
-                i_star, l_star, _ = max(items, key=lambda x: x[2])
-                P_t[i_star] = self.workers[i_star].options[l_star]
+            _, i_star, l_star = heapq.heappop(heap)
+            P_t[i_star] = self.workers[i_star].options[l_star]
 
         return P_t
 
@@ -159,7 +159,7 @@ class UWR(BaseAlgorithm):
             # Terminate if the budget is exceeded.
             if sum(option.cost for option in P_t.values()) >= self.B:
                 break
-
+                
             self.update_profile(P_t)
 
         return self.U, self.tau

@@ -11,6 +11,7 @@ import numpy as np
 
 from algorithms.base import BaseAlgorithm
 from stakeholder import Worker, Task, SimpleOption
+import heapq
 
 
 class EUWR(BaseAlgorithm):
@@ -126,16 +127,17 @@ class EUWR(BaseAlgorithm):
         """
         P_t = {}
         while len(P_t) < self.K:
-            items = []
+            heap = []
             for i in [ii for ii in range(self.N) if ii not in P_t]:
                 for l, option in enumerate(self.workers[i].options):
                     # Select workers based on a new UCB-based criterion that considers the cost
                     ucb_diff = self.compute_ucb_quality(P_t | {i: option}) - self.compute_ucb_quality(P_t)
-                    criterion = ucb_diff / option.cost
-                    items.append((i, l, criterion))
-            if items:
-                i_star, l_star, _ = max(items, key=lambda x: x[2])
-                P_t[i_star] = self.workers[i_star].options[l_star]
+                    criterion = - ucb_diff / option.cost
+                    heapq.heappush(heap, (criterion, i, l))
+
+            _, i_star, l_star = heapq.heappop(heap)
+            P_t[i_star] = self.workers[i_star].options[l_star]
+
         return P_t
 
     def run(self):
