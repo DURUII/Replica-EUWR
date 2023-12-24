@@ -4,37 +4,10 @@
 
 ## Overview
 
-This repository contains the Python re-implementation of the Unknown Worker Recruitment (UWR) algorithm, which is
-proposed in the referenced paper:
-
-```
-@INPROCEEDINGS{9155518,
-  author={Gao, Guoju and Wu, Jie and Xiao, Mingjun and Chen, Guoliang},
-  booktitle={IEEE INFOCOM 2020 - IEEE Conference on Computer Communications}, 
-  title={Combinatorial Multi-Armed Bandit Based Unknown Worker Recruitment in Heterogeneous Crowdsensing}, 
-  year={2020},
-  volume={},
-  number={},
-  pages={179-188},
-  doi={10.1109/INFOCOM41043.2020.9155518}
-}
-```
-
-Our code strives to faithfully replicate the algorithms and experiments described in the paper, allowing for the
+This repository contains the Python re-implementation of the Unknown Worker Recruitment (UWR) algorithms proposed in the referenced paper. Our code strives to faithfully replicate the algorithms and experiments described in the paper, allowing for the
 validation of the paper's assertions.
 
-### Dependencies
-
-Ensure Python 3.x is installed on your system. To install project dependencies, run:
-
-    pip install -r requirements.txt
-
 ## Details
-
-### Data Source
-
-This repository utilizes data from [CRAWDAD RomaTaxi](https://ieee-dataport.org/open-access/crawdad-romataxi). For
-similar results, download the dataset and place it in the `./dataset` directory.
 
 ### Simulation Data Generation
 
@@ -49,13 +22,23 @@ The selected tasks are given by blue stars, while the trajectory of some of the 
 |![](./dataset/2014-02-14.tasks.png)|![](./dataset/2014-02-14.range.png)|![](./dataset/2014-02-14.workers.png)|
 
 
-
 The `generator.py` file also contains the `EasyGenerator` class for simulating data, which randomly generates workers
 and tasks. Modify the generation mode in `config.py` to switch between different simulation settings.
+
+### Data Source
+
+This repository utilizes data from [CRAWDAD RomaTaxi](https://ieee-dataport.org/open-access/crawdad-romataxi). For
+similar results, download the dataset and place it in the `./dataset` directory.
 
 ### Algorithm Implementation
 
 Due to limited descriptions of compared algorithms in the replicated paper, we implemented the `epsilon-first`, `alpha-optimal`, and `random` algorithms based on our understanding. The proposed algorithm from the paper has been faithfully reproduced according to the provided pseudocode. These implementations can be found in the `./algorithms` directory.
+
+### Dependencies
+
+Ensure Python 3.x is installed on your system. To install project dependencies, run:
+
+    pip install -r requirements.txt
 
 ## Experimental Results
 
@@ -76,6 +59,21 @@ Due to limited descriptions of compared algorithms in the replicated paper, we i
 📈 **Total Rounds**:
 
 👓 **Note**: Our replicated algo.1 and algo.2 show a higher number of rounds than those in the original experiment. Additionally, the magnitude of our results differs from those reported in the paper, potentially attributable to our distinct understanding and implementation based on the non-detailed data processing methods in the study.
+
+## Reference
+
+```
+@INPROCEEDINGS{9155518,
+  author={Gao, Guoju and Wu, Jie and Xiao, Mingjun and Chen, Guoliang},
+  booktitle={IEEE INFOCOM 2020 - IEEE Conference on Computer Communications}, 
+  title={Combinatorial Multi-Armed Bandit Based Unknown Worker Recruitment in Heterogeneous Crowdsensing}, 
+  year={2020},
+  volume={},
+  number={},
+  pages={179-188},
+  doi={10.1109/INFOCOM41043.2020.9155518}
+}
+```
 
 
 ## Issues
