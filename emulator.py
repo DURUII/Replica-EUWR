@@ -47,7 +47,7 @@ class Emulator:
         for algo in Emulator.algorithms:
             if self.extended:
                 if algo.startswith('extended'):
-                    algo = algo[8:][:]
+                    algo = algo[9:][:]
                     if algo == 'EUWR':
                         self.name2sol[algo] = EUWR(self.workers, self.tasks, self.K, self.B, self.f)
                     elif algo.endswith('-first'):

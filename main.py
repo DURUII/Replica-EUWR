@@ -12,7 +12,7 @@ import scienceplots
 plt.style.use(['science', 'grid'])
 config = Config
 
-for extended in [False, True]:
+for extended in [True, False]:
     config.extended = extended
     filepath = './extended-runs.pkl' if config.extended else './runs.pkl'
 
