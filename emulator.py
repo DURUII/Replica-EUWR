@@ -16,8 +16,8 @@ import time
 
 
 class Emulator:
-    algorithms = ['UWR', 'opt', 'random', '0.1-first', '0.05-first',
-                  'extended-opt', 'extended-random', 'extended-0.1-first', 'extended-0.05-first', 'extended-EUWR'
+    algorithms = ['UWR', 'opt',  '0.05-first', '0.1-first', 'random',
+                  'extended-EUWR', 'extended-opt',  'extended-0.05-first', 'extended-0.1-first', 'extended-random',
                   ]
 
     def __init__(self, n_tasks: int = config.M,
@@ -26,7 +26,7 @@ class Emulator:
                  n_options: int = config.L,
                  budget: float = config.B,
                  f=config.f,
-                 easy_generator=config.easy_generator, 
+                 easy_generator=config.easy_generator,
                  extended=config.extended):
         self.N = n_workers
         self.M = n_tasks
@@ -46,7 +46,7 @@ class Emulator:
     def build(self):
         for algo in Emulator.algorithms:
             if self.extended:
-                if not algo.startswith('extended'):
+                if algo.startswith('extended'):
                     algo = algo[8:][:]
                     if algo == 'EUWR':
                         self.name2sol[algo] = EUWR(self.workers, self.tasks, self.K, self.B, self.f)
