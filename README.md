@@ -44,7 +44,11 @@ paper [[code](./processor.ipynb), [code](./generator.py)].
 
 The selected tasks are given by blue stars, while the trajectory of some of the chosen workers by colorful dots.
 
-![workers](./dataset/2014-02-14.workers.png)
+|Task|Buffer|Worker|
+|--|--|--|
+|![](./dataset/2014-02-14.tasks.png)|![](./dataset/2014-02-14.range.png)|![](./dataset/2014-02-14.workers.png)|
+
+
 
 The `generator.py` file also contains the `EasyGenerator` class for simulating data, which randomly generates workers
 and tasks. Modify the generation mode in `config.py` to switch between different simulation settings.
