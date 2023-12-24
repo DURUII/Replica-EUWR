@@ -55,13 +55,9 @@ Due to limited descriptions of compared algorithms in the replicated paper, we i
 
 ## Experimental Results
 
-### UWR
-
-![](./fig.jpg)
-
-### EUWR
-
-![](./fig-extended.jpg)
+|UWR|EUWR|
+|--|--|
+|![](./fig.jpg)|![](./fig-extended.jpg)|
 
 ### Discussion
 
