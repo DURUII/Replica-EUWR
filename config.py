@@ -29,6 +29,9 @@ class Config:
 
     f = lambda x: x
 
+    easy_generator = False
+    extended = False
+
     line_styles = {
         'UWR': {'color': '#060506', 'marker': 's', 'label': 'Algo.1'},
         'opt': {'color': '#ed1e25', 'marker': 'o', 'label': 'Optimal'},

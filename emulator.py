@@ -12,10 +12,11 @@ from algorithms.rand import Random
 from algorithms.uwr import UWR
 from generator import EasyGenerator, GeoGenerator
 from config import Config as config
+import time
 
 
 class Emulator:
-    algorithms = ['opt', 'random', '0.1-first', '0.05-first', 'UWR',
+    algorithms = ['UWR', 'opt', 'random', '0.1-first', '0.05-first',
                   'extended-opt', 'extended-random', 'extended-0.1-first', 'extended-0.05-first', 'extended-EUWR'
                   ]
 
@@ -25,7 +26,8 @@ class Emulator:
                  n_options: int = config.L,
                  budget: float = config.B,
                  f=config.f,
-                 easy_generator=True, extended=False):
+                 easy_generator=config.easy_generator, 
+                 extended=config.extended):
         self.N = n_workers
         self.M = n_tasks
         self.B = budget
@@ -43,18 +45,7 @@ class Emulator:
 
     def build(self):
         for algo in Emulator.algorithms:
-            if not self.extended:
-                if not algo.startswith('extended'):
-                    if algo == 'UWR':
-                        self.name2sol[algo] = UWR(self.workers, self.tasks, self.K, self.B, self.f)
-                    elif algo.endswith('-first'):
-                        self.name2sol[algo] = EpsilonFirst(self.workers, self.tasks, self.K, self.B, self.f,
-                                                           float(algo[:-6]))
-                    elif algo == 'random':
-                        self.name2sol[algo] = Random(self.workers, self.tasks, self.K, self.B, self.f)
-                    elif algo == 'opt':
-                        self.name2sol[algo] = Opt(self.workers, self.tasks, self.K, self.B, self.f)
-            else:
+            if self.extended:
                 if not algo.startswith('extended'):
                     algo = algo[8:][:]
                     if algo == 'EUWR':
@@ -67,13 +58,26 @@ class Emulator:
                     elif algo == 'opt':
                         self.name2sol[algo] = Opt(self.workers, self.tasks, self.K, self.B, self.f, extended=True)
 
+            elif not algo.startswith('extended'):
+                if algo == 'UWR':
+                    self.name2sol[algo] = UWR(self.workers, self.tasks, self.K, self.B, self.f)
+                elif algo.endswith('-first'):
+                    self.name2sol[algo] = EpsilonFirst(self.workers, self.tasks, self.K, self.B, self.f,
+                                                       float(algo[:-6]))
+                elif algo == 'random':
+                    self.name2sol[algo] = Random(self.workers, self.tasks, self.K, self.B, self.f)
+                elif algo == 'opt':
+                    self.name2sol[algo] = Opt(self.workers, self.tasks, self.K, self.B, self.f)
+
     def simulate(self):
         self.build()
         name2res = {name: None for name in self.name2sol.keys()}
-        for name in name2res.keys():
+        for name in name2res:
+            tic = time.perf_counter()
             # instance of an algorithm
             solver = self.name2sol[name]
             solver.initialize()
             name2res[name] = solver.run()
-        print(name2res)
+            toc = time.perf_counter()
+            print(f'algo={name}, res={name2res[name]}, time={toc-tic}')
         return name2res
