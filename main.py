@@ -8,6 +8,7 @@ from config import Config
 from emulator import Emulator
 import pickle
 
+import scienceplots
 plt.style.use(['science', 'grid'])
 config = Config
 

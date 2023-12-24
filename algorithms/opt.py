@@ -56,12 +56,10 @@ class Opt(BaseAlgorithm):
         P_t = {}
         heap = []
         while len(P_t) < self.K:
+            base = np.dot(self.w, self.compute_utility_e(P_t)[0])
             for i in [ii for ii in range(self.N) if ii not in P_t]:
                 for l, option in enumerate(self.workers[i].options):
-                    u_diff = np.dot(self.w,
-                                    self.compute_utility_e(P_t | {i: option})[0]) - np.dot(self.w,
-                                                                                           self.compute_utility_e(
-                                                                                               P_t)[0])
+                    u_diff = np.dot(self.w, self.compute_utility_e(P_t | {i: option})[0]) - base
                     criterion = - u_diff / option.cost
                     heapq.heappush(heap, (criterion, i, l))
 

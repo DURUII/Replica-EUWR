@@ -127,10 +127,11 @@ class EUWR(BaseAlgorithm):
         P_t = {}
         heap = []
         while len(P_t) < self.K:
+            base = self.compute_ucb_quality(P_t)
             for i in [ii for ii in range(self.N) if ii not in P_t]:
                 for l, option in enumerate(self.workers[i].options):
                     # Select workers based on a new UCB-based criterion that considers the cost
-                    ucb_diff = self.compute_ucb_quality(P_t | {i: option}) - self.compute_ucb_quality(P_t)
+                    ucb_diff = self.compute_ucb_quality(P_t | {i: option}) - base
                     criterion = - ucb_diff / option.cost
                     heapq.heappush(heap, (criterion, i, l))
 

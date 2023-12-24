@@ -132,11 +132,12 @@ class UWR(BaseAlgorithm):
 
         # Iterate until K workers are selected.
         while len(P_t) < self.K:
+            base = self.compute_ucb_quality(P_t)
             # P \ P_t' (Line 6 & 7)
             for i in [ii for ii in range(self.N) if ii not in P_t]:
                 for l, option in enumerate(self.workers[i].options):
                     # Compute UCB quality difference (Equation 12)
-                    ucb_diff = self.compute_ucb_quality(P_t | {i: option}) - self.compute_ucb_quality(P_t)
+                    ucb_diff = self.compute_ucb_quality(P_t | {i: option}) - base
                     criterion = - ucb_diff / option.cost
                     heapq.heappush(heap, (criterion, i, l))
 
@@ -162,5 +163,6 @@ class UWR(BaseAlgorithm):
                 break
 
             self.update_profile(P_t)
+            # print(self.tau, self.B, self.U)
 
         return self.U, self.tau

@@ -18,11 +18,11 @@ class BaseAlgorithm(metaclass=ABCMeta):
     def __init__(self, workers: list[Worker], tasks: list[Task], n_selected: int, budget: float):
         # INPUTS
         # \mathcal{N}, the set of workers, indexed by i
-        self.workers = workers
+        self.workers = workers[:]
         self.N = len(workers)
 
         # \mathcal{M}, the set of tasks, indexed by j
-        self.tasks = tasks
+        self.tasks = tasks[:]
         self.M = len(tasks)
 
         # K, the number of workers recruited in each round

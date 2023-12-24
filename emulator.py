@@ -15,9 +15,8 @@ from config import Config as config
 
 
 class Emulator:
-    algorithms = ['opt', 'random', '0.1-first', '0.05-first', 'UWR', 'EUWR',
-                  'extended-opt', 'extended-random', 'extended-0.1-first', 'extended-0.05-first', 'extended-UWR',
-                  'extended-EUWR'
+    algorithms = ['opt', 'random', '0.1-first', '0.05-first', 'UWR',
+                  'extended-opt', 'extended-random', 'extended-0.1-first', 'extended-0.05-first', 'extended-EUWR'
                   ]
 
     def __init__(self, n_tasks: int = config.M,
