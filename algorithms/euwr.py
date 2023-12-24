@@ -89,6 +89,10 @@ class EUWR(BaseAlgorithm):
         """
 
         self.observed_e = np.array([self.workers[i].epsilon() for i in range(self.N)])
+        for i in range(self.N):
+            for l in range(self.L):
+                self.workers[i].options[l].update_cost(
+                    self.f, self.observed_e[i])
         P_t: dict[int, SimpleOption] = {i: w_i.options[0].update_cost(self.f, self.observed_e[i])
                                         for i, w_i in enumerate(self.workers)}
         self.update_profile(P_t)
