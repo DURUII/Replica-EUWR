@@ -20,13 +20,13 @@ class Config:
 
     rK = 1 / 3
     rK_range = [3 / 5, 1 / 2, 1 / 3, 1 / 4, 1 / 5, 1 / 6]
-    rk_label = ["3/5", "1/2", "1/3", "1/4", "1/5", "1/6"]
+    rk_label = ["3/5", "1/2", "1/3", "1/4", "1/5", "1/6"][::-1]
 
     B = 1e4
     B_range = np.array([i for i in range(2, 11)]) * 1e3
 
     # NOTE: default value is not specified in the paper
-    L = 2
+    L = 3
 
     def f(x): 
         return x
@@ -47,7 +47,7 @@ class Config:
     bar_width = 0.15
     bar_styles = {
         'UWR': {'color': '#060506', 'hatch': '', 'label': 'Algo.1'},
-        'EUWR': {'color': '#060506', 'marker': 's', 'label': 'Algo.2'},
+        'EUWR': {'color': '#060506', 'hatch': '', 'label': 'Algo.2'},
         'opt': {'color': '#ed1e25', 'hatch': '|||||', 'label': 'Optimal'},
         '0.05-first': {'color': '#3753a4', 'hatch': '///////', 'label': '0.05-first'},
         '0.1-first': {'color': '#097f80', 'hatch': '\\\\\\\\\\\\', 'label': '0.1-first'},

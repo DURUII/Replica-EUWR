@@ -57,7 +57,7 @@ for extended in [True, False]:
 
     for algo in algos:
         if config.extended:
-            algo = algo[8:]
+            algo = algo[9:]
         data = df[(df.X == 'B') & (df.Algorithm == algo)]
         ax = axes[0, 1]
         ax.plot(data['Val'], data['Round'], **config.line_styles[algo])
@@ -90,6 +90,8 @@ for extended in [True, False]:
             index='Val', columns='Algorithm', values='Reward')
         print(data.head())
         for i, algo in enumerate(algos):
+            if config.extended:
+                algo = algo[9:]
             xpos = np.arange(len(data.index)) + \
                 (i - n_algos / 2) * config.bar_width
             ax.bar(xpos, data[algo], width=config.bar_width,

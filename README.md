@@ -55,7 +55,26 @@ Due to limited descriptions of compared algorithms in the replicated paper, we i
 
 ## Experimental Results
 
-🚧 Under Construction. Stay tuned! 🚀
+### UWR
+
+![](./fig.jpg)
+
+### EUWR
+
+![](./fig-extended.jpg)
+
+### Discussion
+
+📊 **Total Weighted Quality**:
+- 🟢 **UWR(EUWR) & Optimal**: Closely matched performance.
+- 🔵 **0.1-first, 0.05-first, & Random**: Less stable compared to the paper.
+
+🔍 **Observation**: The instability in the relationship among 0.1-first, 0.05-first, and random algorithms, as compared to the original study, may be due to our different interpretation stemming from the paper's limited algorithmic descriptions.
+
+📈 **Total Rounds**:
+
+🔑 **Note**: Our replicated algo.1 and algo.2 show a higher number of rounds than those in the original experiment. Additionally, the magnitude of our results differs from those reported in the paper, potentially attributable to our distinct understanding and implementation based on the non-detailed data processing methods in the study.
+
 
 ## Issues
 
