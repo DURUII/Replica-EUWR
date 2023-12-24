@@ -23,7 +23,7 @@ proposed in the referenced paper:
 Our code strives to faithfully replicate the algorithms and experiments described in the paper, allowing for the
 validation of the paper's assertions.
 
-## Dependencies
+### Dependencies
 
 Ensure Python 3.x is installed on your system. To install project dependencies, run:
 
@@ -38,7 +38,7 @@ similar results, download the dataset and place it in the `./dataset` directory.
 
 ### Simulation Data Generation
 
-A gaint challenge of reproducing the experiment is the inadequately formulated simulation description. Despite this, we
+One significant obstacle in replicating the experiment is the insufficiently developed simulation description, particularly with regard to the processing of GPS data. Despite this, we
 make our utmost effort to adhere to the description provided in the
 paper [[code](./processor.ipynb), [code](./generator.py)].
 
@@ -69,11 +69,13 @@ Due to limited descriptions of compared algorithms in the replicated paper, we i
 - 🟢 **UWR(EUWR) & Optimal**: Closely matched performance.
 - 🔵 **0.1-first, 0.05-first, & Random**: Less stable compared to the paper.
 
+🧠 **UWR**: Theoretically, the Optimal algorithm should strictly outperform all others. However, in our implementation, we drew inspiration from the concept of Steepest Ascent, which may lead to finding only a local optimum, even when all hidden parameters are known.
+
 🔍 **Observation**: The instability in the relationship among 0.1-first, 0.05-first, and random algorithms, as compared to the original study, may be due to our different interpretation stemming from the paper's limited algorithmic descriptions.
 
 📈 **Total Rounds**:
 
-🔑 **Note**: Our replicated algo.1 and algo.2 show a higher number of rounds than those in the original experiment. Additionally, the magnitude of our results differs from those reported in the paper, potentially attributable to our distinct understanding and implementation based on the non-detailed data processing methods in the study.
+👓 **Note**: Our replicated algo.1 and algo.2 show a higher number of rounds than those in the original experiment. Additionally, the magnitude of our results differs from those reported in the paper, potentially attributable to our distinct understanding and implementation based on the non-detailed data processing methods in the study.
 
 
 ## Issues

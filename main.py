@@ -67,7 +67,7 @@ for extended in [True, False]:
         data = df[(df.X == 'N') & (df.Algorithm == algo)]
         ax = axes[1, 1]
         ax.plot(data['Val'], data['Round'], **config.line_styles[algo])
-        ax.set_xlabel('Number of arms (N)')
+        ax.set_xlabel('Number of workers (N)')
         ax.set_ylabel('Total rounds')
 
         data = df[(df.X == 'M') & (df.Algorithm == algo)]
@@ -79,7 +79,7 @@ for extended in [True, False]:
         data = df[(df.X == 'rK') & (df.Algorithm == algo)]
         ax = axes[3, 1]
         ax.plot(data['Val'], data['Round'], **config.line_styles[algo])
-        ax.set_xlabel('Parameter (rK)')
+        ax.set_xlabel('Percentage of total workers (rK)')
         ax.set_ylabel('Total rounds')
 
     # bar plots
@@ -97,14 +97,14 @@ for extended in [True, False]:
             ax.bar(xpos, data[algo], width=config.bar_width,
                    **config.bar_styles[algo])
 
-        ax.set_ylabel('Total rewards')
+        ax.set_ylabel('Total weighted quality')
         ax.set_xticks(range(len(data.index)))
         ax.set_xticklabels(data.index)
 
     axes[0, 0].set_xlabel('Budget')
-    axes[1, 0].set_xlabel('Number of arms (N)')
+    axes[1, 0].set_xlabel('Number of workers (N)')
     axes[2, 0].set_xlabel('Number of tasks (M)')
-    axes[3, 0].set_xlabel('Parameter (rK)')
+    axes[3, 0].set_xlabel('Percentage of total workers (rK)')
     axes[3, 0].set_xticklabels(config.rk_label)
 
     for ax in axes.flat:
