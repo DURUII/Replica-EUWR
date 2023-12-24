@@ -34,13 +34,10 @@ similar results, download the dataset and place it in the `./dataset` directory.
 
 Due to limited descriptions of compared algorithms in the replicated paper, we implemented the `epsilon-first`, `alpha-optimal`, and `random` algorithms based on our understanding. The proposed algorithm from the paper has been faithfully reproduced according to the provided pseudocode. These implementations can be found in the `./algorithms` directory.
 
-### Dependencies
-
-Ensure Python 3.x is installed on your system. To install project dependencies, run:
+## Experimental Results
 
     pip install -r requirements.txt
-
-## Experimental Results
+    python3 main.py
 
 |UWR|EUWR|
 |--|--|
